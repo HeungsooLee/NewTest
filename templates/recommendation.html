@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>[개인 맞춤 진로 추천 시스템]</title>
+    <!-- 여기에 필요한 CSS 링크 추가 -->
+    <!-- 로딩창 스타일 -->
+    <style>
+        .modal-background {
+            display: none; /* 기본적으로 숨김 */
+            position: fixed; /* 고정된 위치 */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* 반투명 검은색 배경 */
+            z-index: 2; /* 다른 요소보다 앞에 표시 */
+        }
+
+        .loading-container {
+            display: none; /* 기본적으로 숨김 */
+            position: fixed; /* 고정된 위치 */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3; /* 모달 배경 위에 표시되도록 z-index 설정 */
+        }        
+
+        .loader {
+            border: 5px solid #f3f3f3; /* Light grey */
+            border-top: 5px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+            display: none; /* 기본적으로 숨김 */
+            position: fixed; /* 고정된 위치 */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3; /* 로더가 모달 배경 위에 표시되도록 z-index 설정 */
+        }
+
+        .loading-text {
+            display: none; /* 기본적으로 숨김 */
+            text-align: center;
+            color: #333;
+            font-size: 16px;
+            margin-top: 10px; /* 로더와의 간격 조정 */
+        }        
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column; /* 아이템들을 수직 방향으로 정렬 */
+            justify-content: center; /* 수평 방향의 중앙 정렬 */
+            align-items: center; /* 수직 방향의 중앙 정렬 */
+            min-height: 100vh;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd; /* 폼의 테두리 */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 40px; /* 상단 여백 추가 */
+            margin-bottom: 40px;
+        }
+
+        .radio-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+
+        /* 체크박스와 레이블을 같은 줄에 표시 */
+        .checkbox-group {
+            margin-bottom: 10px;
+        }
+
+        .checkbox-group input[type='checkbox'] {
+            margin-right: 5px;
+        }
+
+        .checkbox-group label {
+            display: inline-block; /* 레이블을 인라인 블록 요소로 설정 */
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold; /* 굵은 글씨로 강조 */
+        }
+
+        /* legend 태그에 대한 스타일 */
+        legend {
+            font-weight: bold; /* legend 태그에 굵은 글씨 적용 */
+        }
+
+        input[type='text'],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box; /* 패딩과 테두리를 넓이 계산에 포함 */
+        }
+
+        input[type='radio'] {
+            margin-right: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        /* 라디오 버튼과 체크 박스의 크기를 조정 */
+        input[type='radio'], input[type='checkbox'] {
+            width: 17px; /* 크기 조정 */
+            height: 17px; /* 크기 조정 */
+            cursor: pointer; /* 클릭 가능한 요소임을 나타내는 커서 스타일 */
+        }
+
+        /* 라디오 버튼과 체크 박스 레이블의 정렬을 위한 추가 스타일 */
+        .radio-group label, .checkbox-group label {
+            margin-left: 5px; /* 레이블과 버튼 사이의 여백 조정 */
+        }
+
+        #recommendationForm {
+            background-color: #fff; /* 폼 내부의 배경색 */
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd; /* 폼의 테두리 */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }        
+        .payment-notice {
+            background-color: #f9f9f9; /* 밝은 회색 배경 */
+            border-left: 4px solid #3498db; /* 왼쪽 테두리에 강조 색상 추가 */
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            font-weight: bold; /* 볼드체 적용 */
+            font-size: 18px;
+            color: #333;
+            border-radius: 4px;
+        }
+
+
+        @media (max-width: 600px) {
+            .container {
+                width: 100%;
+                margin: 10px;
+            }
+
+            button {
+                padding: 15px;
+            }
+        }
+    </style>
+
+
+</head>
+<body>
+    <h1>개인 맞춤 진로 추천 시스템</h1>
+
+    <form id="recommendationForm" action="/recommendation" method="post">
+        <label for="nickname">이름 또는 별명:</label>
+        <input type="text" id="nickname" name="nickname"><br><br>
+
+        <label for="work_preference">선호하는 업무 환경:</label>
+        <select id="work_preference" name="work_preference">
+            <option value="팀워크 중시">팀워크 중시</option>
+            <option value="독립적 업무">독립적 업무</option>
+            <option value="혁신적 환경">혁신적 환경</option>
+            <option value="안정적 환경">안정적 환경</option>
+        </select><br><br>
+
+        <div class="radio-group">
+            <label for="creative_thinking">창의적 사고를 자주 하시나요?</label>
+            <input type="radio" id="creative_yes" name="creative_thinking" value="예">
+            <label for="creative_yes">예</label>
+            <input type="radio" id="creative_no" name="creative_thinking" value="아니오">
+            <label for="creative_no">아니오</label>
+        </div>
+        <br>
+        
+        <div class="radio-group">
+            <label for="detail_oriented">세부 사항에 주의를 기울이시나요?</label>
+            <input type="radio" id="detail_yes" name="detail_oriented" value="예">
+            <label for="detail_yes">예</label>
+            <input type="radio" id="detail_no" name="detail_oriented" value="아니오">
+            <label for="detail_no">아니오</label>
+        </div>
+        <br>
+        
+        <div class="radio-group">
+            <label for="enjoy_social_interaction">사회적 상호작용을 즐기시나요?</label>
+            <input type="radio" id="social_yes" name="enjoy_social_interaction" value="예">
+            <label for="social_yes">예</label>
+            <input type="radio" id="social_no" name="enjoy_social_interaction" value="아니오">
+            <label for="social_no">아니오</label>
+        </div>
+        <br>
+        
+        <div class="radio-group">
+            <label for="prefer_routine">일상적이고 반복적인 작업을 선호하시나요?</label>
+            <input type="radio" id="routine_yes" name="prefer_routine" value="예">
+            <label for="routine_yes">예</label>
+            <input type="radio" id="routine_no" name="prefer_routine" value="아니오">
+            <label for="routine_no">아니오</label>
+        </div>
+        <br>
+
+        <label for="hobby">취미:</label>
+        <input type="text" id="hobby" name="hobby"><br><br>
+
+        <label for="mbti">MBTI 성격 유형:</label>
+        <select id="mbti" name="mbti">
+            <option value="INTJ">INTJ</option>
+            <option value="INTP">INTP</option>
+            <option value="ENTJ">ENTJ</option>
+            <option value="ENTP">ENTP</option>
+            <option value="INFJ">INFJ</option>
+            <option value="INFP">INFP</option>
+            <option value="ENFJ">ENFJ</option>
+            <option value="ENFP">ENFP</option>
+            <option value="ISTJ">ISTJ</option>
+            <option value="ISFJ">ISFJ</option>
+            <option value="ESTJ">ESTJ</option>
+            <option value="ESFJ">ESFJ</option>
+            <option value="ISTP">ISTP</option>
+            <option value="ISFP">ISFP</option>
+            <option value="ESTP">ESTP</option>
+            <option value="ESFP">ESFP</option>
+        </select><br><br>
+
+        <fieldset>
+            <legend>관심 있는 산업분야:</legend>
+            <div class="checkbox-group">
+                <input type="checkbox" id="industry_it" name="industry_interests" value="IT/소프트웨어">
+                <label for="industry_it">IT/소프트웨어</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="industry_finance" name="industry_interests" value="금융">
+                <label for="industry_finance">금융</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="industry_manufacturing" name="industry_interests" value="제조">
+                <label for="industry_manufacturing">제조</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="industry_service" name="industry_interests" value="서비스">
+                <label for="industry_service">서비스</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="industry_education" name="industry_interests" value="교육">
+                <label for="industry_education">교육</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="industry_medical" name="industry_interests" value="의료/보건">
+                <label for="industry_medical">의료/보건</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="industry_media" name="industry_interests" value="미디어/광고">
+                <label for="industry_media">미디어/광고</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="industry_trade" name="industry_interests" value="무역">
+                <label for="industry_trade">무역</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="industry_construction" name="industry_interests" value="건설">
+                <label for="industry_construction">건설</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="industry_public" name="industry_interests" value="공공/정부">
+                <label for="industry_public">공공/정부</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="industry_other" name="industry_interests" value="기타">
+                <label for="industry_other">기타</label>
+            </div>
+            <div class="checkbox-group">
+                <label for="other_industry">위의 카테고리에 없는 산업분야를 자유롭게 입력해주세요:</label>
+                <input type="text" id="other_industry" name="other_industry">
+            </div>
+        </fieldset>
+        <br>    
+
+
+        </fieldset><br>
+
+        <!-- 관심 있는 직업분야 체크박스들 -->
+        <fieldset>
+            <legend>관심 있는 직업분야:</legend>
+            <div class="checkbox-group">
+                <input type="checkbox" id="job_technology" name="job_interests" value="기술/공학">
+                <label for="job_technology">기술/공학</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="job_business" name="job_interests" value="경영/사업">
+                <label for="job_business">경영/사업</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="job_healthcare" name="job_interests" value="의료/보건">
+                <label for="job_healthcare">의료/보건</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="job_education" name="job_interests" value="교육/훈련">
+                <label for="job_education">교육/훈련</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="job_art" name="job_interests" value="예술/디자인">
+                <label for="job_art">예술/디자인</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="job_creative_writing" name="job_interests" value="창작/글쓰기">
+                <label for="job_creative_writing">창작/글쓰기</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="job_finance" name="job_interests" value="재무/회계">
+                <label for="job_finance">재무/회계</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="job_marketing" name="job_interests" value="마케팅/광고">
+                <label for="job_marketing">마케팅/광고</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="job_legal" name="job_interests" value="법률/행정">
+                <label for="job_legal">법률/행정</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="job_social_service" name="job_interests" value="사회복지/서비스">
+                <label for="job_social_service">사회복지/서비스</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="job_other" name="job_interests" value="기타">
+                <label for="job_other">기타</label>
+            </div>
+            <div class="checkbox-group">
+                <label for="other_job">위의 카테고리에 없는 직업분야를 자유롭게 입력해주세요:</label>
+                <input type="text" id="other_job" name="other_job">
+            </div>
+        </fieldset>
+        <br>
+        <br>
+
+        <!-- 추가적인 텍스트 입력 필드 -->
+        <label for="social_issue">해결하고 싶은 사회문제 (예시 : 저출산, 고령화, 기아, 노동력 부족, 지역 경제 활성화):</label>
+        <input type="text" id="social_issue" name="social_issue"><br><br>
+
+        <label for="dream">나에게도 의미가 있고 세상에도 기여할 수 있는 이루고 싶은 꿈:</label>
+        <input type="text" id="dream" name="dream"><br><br>
+
+        <label for="job_success_definition">귀하에게 직업적 성공이란 무엇인가요?</label>
+        <input type="text" id="job_success_definition" name="job_success_definition"><br><br>
+
+        <label for="career_plan">앞으로 5년 또는 10년 내에 달성하고 싶은 경력 목표가 있나요?</label>
+        <input type="text" id="career_plan" name="career_plan"><br><br>
+
+        <label for="self_evaluation">자신의 강점, 약점에 대해 서술해주세요:</label>
+        <textarea id="self_evaluation" name="self_evaluation"></textarea><br><br>
+
+        <label for="job_experience">이전에 가졌던 직업 체험, 인턴십, 자원봉사 등에 대해 자유롭게 서술해주세요:</label>
+        <textarea id="job_experience" name="job_experience"></textarea><br><br>
+
+        <!-- 결제 정보 안내 섹션 -->
+        <div class="payment-notice">
+            서비스 이용을 위해 1,000원의 결제가 필요합니다. 결제를 완료해야만 맞춤형 진로 추천 보고서를 받을 수 있습니다.
+        </div>      
+        <div class="payment-notice">
+            제출 버튼을 누르면 Kakaopay 간편 결제창이 호출됩니다. GPT-4가 보고서를 생성하며 1~2분 이상 소요될 수 있습니다.
+        </div>  
+
+        <button type="button" onclick="requestPay()">제출</button>
+
+    </form>
+
+    <!-- 로딩창 및 로딩 텍스트를 포함하는 컨테이너 -->
+    <div class="loading-container" id="loadingContainer">
+        <!-- 로딩창 요소 -->
+        <div class="loader" id="loader"></div>    
+
+        <!-- 로딩 텍스트 요소 -->
+        <div class="loading-text" id="loadingText">1~2분 이상 소요될 수 있습니다. 절대로 새로 고침 또는 뒤로가기 버튼을 누르지 마세요.</div>
+    </div>
+
+
+    <!-- 모달 배경 요소 -->
+    <div class="modal-background" id="modalBackground"></div>
+
+
+    <!-- 결제 라이브러리 포함 -->
+    <script src="https://cdn.iamport.kr/v1/iamport.js"></script>    
+
+    <!-- 결제 요청 함수 -->
+    <script>
+        IMP.init("imp36055033");  // 가맹점 식별코드
+
+        function requestPay() {
+            IMP.request_pay({
+                pg: "kakaopay",
+                pay_method: "card",
+                merchant_uid: "ORD20240204-44",
+                name: "Report",
+                amount: 1000,
+                buyer_tel: "010-1234-5678",
+            }, function (rsp) {
+                if (rsp.success) {
+                    // 결제 성공 Alert
+                    alert("결제가 완료되었습니다.");
+
+                    // AI 응답을 localStorage에 저장
+                    var aiResponse = "{{ ai_response }}"; // Flask에서 전달한 ai_response 변수를 사용
+                    localStorage.setItem('aiResponse', aiResponse);                    
+
+                    // 모달 배경 로딩 컨테이너, 로딩창, 로딩 텍스트 표시
+                    document.getElementById("modalBackground").style.display = 'block';
+                    document.getElementById("loadingContainer").style.display = 'block';
+                    document.getElementById("loader").style.display = 'block';
+                    document.getElementById("loadingText").style.display = 'block';
+
+                    // 폼 데이터 전송
+                    document.getElementById("recommendationForm").submit();                    
+
+                } else {
+                    // 결제 실패 시, 사용자에게 알림
+                    alert(rsp.error_msg);
+                }
+            });
+        }
+    </script>
+
+    <footer>
+        <!-- 푸터 내용 -->
+    </footer>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>결제 페이지</title>
+    <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+</head>
+<body>
+    <button onclick="requestPay()">결제하기</button>
+
+    <script>
+        IMP.init("imp36055033"); // 여기에 IAMPORT 사용자 식별코드를 넣으세요.
+
+        function requestPay() {
+            // 결제 요청을 위한 정보
+            IMP.request_pay({
+                pg: "kakaopay",
+                pay_method: "card",
+                merchant_uid: "ORD20240129-000002", // 주문번호 (서버에서 생성하는 것이 좋습니다)
+                name: "Report",
+                amount: 1000,
+                buyer_tel: "010-1234-5678"
+            }, function (response) {
+                if (response.success) {
+                    // 결제 성공 시 로직
+                    window.location.href = "/result"; // 여기서 /result로 이동합니다.
+                } else {
+                    // 결제 실패 시 로직
+                    alert("결제 실패: " + response.error_msg);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
